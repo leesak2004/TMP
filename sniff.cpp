@@ -74,11 +74,11 @@ int main() {
 	int res, dataAddr;
 	while ((res = pcap_next_ex(fp, &header, &pkt_data)) >= 0) {// 1 if success
 		if (res == 0) continue; // 0 if time-out
-		struct ether_header *eth_header = (struct ether_header *)pkt_data;
-		struct iphdr *ip_header = (struct iphdr *)(pkt_data + sizeof(*eth_header));
-		struct tcphdr *tcp_header = (struct tcphdr *)(pkt_data+sizeof(*eth_header)+((ip_header->ihl)*4));
+		struct ether_header *eth_header = (struct ether_header *)pkt_data;	//Struct for Ethernet Header
+		struct iphdr *ip_header = (struct iphdr *)(pkt_data + sizeof(*eth_header)); //Struct for IP Header
+		struct tcphdr *tcp_header = (struct tcphdr *)(pkt_data+sizeof(*eth_header)+((ip_header->ihl)*4)); //Struct for TCP Header
 				
-		dataAddr = sizeof(tcp_header) + sizeof(ip_header) + sizeof(eth_header);
+		dataAddr = sizeof(tcp_header) + sizeof(ip_header) + sizeof(eth_header); //Set index for print Data(String)
 		print_raw_packet(pkt_data, header->caplen);
 		print_ether_header(eth_header);
 		print_ip_header(ip_header, pkt_data);
@@ -99,6 +99,7 @@ int main() {
 	return 0;
 }
 
+//Print raw packet
 void print_raw_packet(const unsigned char *pkt_data, bpf_u_int32 len)
 {
 	printf("===========================================\n");
@@ -111,6 +112,7 @@ void print_raw_packet(const unsigned char *pkt_data, bpf_u_int32 len)
 	printf("\n");
 }
 
+//Print Ether type, Src/Dst MAC addr
 void print_ether_header(struct ether_header *eth_header)
 {
 	
@@ -137,6 +139,7 @@ void print_ether_header(struct ether_header *eth_header)
 	printf("\n");
 }
 
+//print IPv, IP Header Length, Protocol, Src/Dst IP addr
 void print_ip_header(struct iphdr *ip_header, const unsigned char *pkt_data)
 {
 	printf("IP Version : %d\n", ip_header->version);
@@ -153,11 +156,15 @@ void print_ip_header(struct iphdr *ip_header, const unsigned char *pkt_data)
 		printf("%d.", *(pkt_data + i));
 	printf("\b \n");
 }
+
+//print Src & Dst Port
 void print_tcp_header(struct tcphdr *tcp_header)
 {
 	printf("Src Port : %d\n", ntohs(tcp_header->source));
-	printf("Src Port : %d\n", ntohs(tcp_header->dest));
+	printf("Dst Port : %d\n", ntohs(tcp_header->dest));
 }
+
+//print Data(String)
 void print_data(const unsigned char *pkt_data, int dataAddr,int len)
 {
 	for (int i = dataAddr; i < len; i++)
